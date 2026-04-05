@@ -2,21 +2,35 @@
  * Regalem GYN Server Entry Point
  */
 
-require('dotenv').config();
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const cors = require('cors');
-const helmet = require('helmet');
-const path = require('path');
+import dotenv from 'dotenv';
+import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import cors from 'cors';
+import helmet from 'helmet';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const { connectDatabase } = require('./src/backend/config/database');
-const { errorHandler } = require('./src/backend/middleware/errorHandler');
-const { socketManager } = require('./src/backend/websocket/socketManager');
+import { connectDatabase } from './src/backend/config/database.js';
+import { errorHandler } from './src/backend/middleware/errorHandler.js';
+import { socketManager } from './src/backend/websocket/socketManager.js';
+import authRoutes from './src/backend/api/auth.routes.js';
+import roomsRoutes from './src/backend/api/rooms.routes.js';
+import gamesRoutes from './src/backend/api/games.routes.js';
+import leaderboardRoutes from './src/backend/api/leaderboard.routes.js';
+import profileRoutes from './src/backend/api/profile.routes.js';
 
+// Initialize environment variables
+dotenv.config();
+
+// Get __dirname equivalent in ES6
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Create app and server
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
+const server = createServer(app);
+const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
@@ -33,11 +47,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 connectDatabase();
 
 // API Routes
-app.use('/api/auth', require('./src/backend/api/auth.routes'));
-app.use('/api/rooms', require('./src/backend/api/rooms.routes'));
-app.use('/api/games', require('./src/backend/api/games.routes'));
-app.use('/api/leaderboard', require('./src/backend/api/leaderboard.routes'));
-app.use('/api/profile', require('./src/backend/api/profile.routes'));
+app.use('/api/auth', authRoutes);
+app.use('/api/rooms', roomsRoutes);
+app.use('/api/games', gamesRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/profile', profileRoutes);
 
 // WebSocket
 socketManager(io);
@@ -56,4 +70,4 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-module.exports = { app, server, io };
+export { app, server, io };
