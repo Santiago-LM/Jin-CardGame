@@ -1,0 +1,346 @@
+/**
+ * animations.css — Entry animations & transitions
+ */
+
+/* ── Staggered fade-up on load ── */
+[data-animate="fade-up"] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
+}
+
+[data-animate="fade-up"].in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Delays driven by data-delay attribute (applied via JS) */
+
+/* ── XP bar fill animation ── */
+.xp-bar-fill {
+  animation: xp-grow 1.2s 0.6s var(--ease) both;
+}
+
+@keyframes xp-grow {
+  from { width: 0 !important; }
+}
+
+/* ── Mode card shimmer on hover ── */
+.mode-card::after {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -30%;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.025) 50%,
+    transparent 60%
+  );
+  transform: skewX(-15deg) translateX(-100%);
+  transition: transform 0s;
+  pointer-events: none;
+}
+
+.mode-card:hover::after {
+  transform: skewX(-15deg) translateX(300%);
+  transition: transform 0.65s ease;
+}
+
+/* ── Live dot pulse ── */
+@keyframes live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 125, 0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(76, 175, 125, 0); }
+}
+
+.live-dot {
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+/* ── Profile online dot ── */
+.profile-online-dot {
+  animation: live-pulse 2.5s ease-in-out infinite;
+}
+
+/* ── Navbar slide-down ── */
+.navbar {
+  animation: navbar-in 0.4s var(--ease) both;
+}
+
+@keyframes navbar-in {
+  from { opacity: 0; transform: translateY(-10px); }
+}
+
+/* ── Room card hover lift ── */
+.room-card {
+  transition: transform 0.2s var(--ease), border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.room-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Button active press ── */
+.btn-play:active,
+.btn-room:active,
+.btn-modal-confirm:active {
+  transform: scale(0.97);
+}
+
+/* ── Daily strip glow pulse ── */
+.daily-icon {
+  animation: diamond-glow 3s ease-in-out infinite;
+}
+
+@keyframes diamond-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(201, 153, 58, 0.3)); }
+  50% { filter: drop-shadow(0 0 14px rgba(201, 153, 58, 0.7)); }
+}
+
+/* ── Leaderboard row highlight ── */
+.lb-row {
+  transition: background 0.15s, transform 0.15s;
+}
+
+.lb-row:hover { transform: translateX(3px); }
+
+/* ── Activity row animations ── */
+.activity-row {
+  transition: all 0.2s ease;
+}
+
+.activity-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(4px);
+}
+
+/* ── Card animations ── */
+.card {
+  transition: all 0.2s var(--ease);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+}
+
+.card.selected {
+  animation: card-pop 0.3s var(--ease);
+}
+
+@keyframes card-pop {
+  0% { transform: scale(0.95); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* ── Profile card animations ── */
+.profile-card {
+  animation: profile-slide-in 0.6s var(--ease);
+}
+
+@keyframes profile-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Mode card animations ── */
+.mode-card {
+  animation: mode-card-in 0.6s var(--ease);
+  animation-fill-mode: both;
+}
+
+.mode-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.mode-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+@keyframes mode-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Dropdown slide ── */
+.profile-dropdown {
+  animation: dropdown-in 0.2s var(--ease);
+}
+
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Loading pulse ── */
+@keyframes loading-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.loading {
+  animation: loading-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Rotation animation ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ── Scale pop ── */
+@keyframes pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pop {
+  animation: pop 0.3s var(--ease);
+}
+
+/* ── Bounce ── */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.bounce {
+  animation: bounce 1s ease-in-out infinite;
+}
+
+/* ── Slide in from left ── */
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-left {
+  animation: slide-in-left 0.4s var(--ease);
+}
+
+/* ── Slide in from right ── */
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-right {
+  animation: slide-in-right 0.4s var(--ease);
+}
+
+/* ── Fade and scale ── */
+@keyframes fade-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-scale {
+  animation: fade-scale 0.3s var(--ease);
+}
+
+/* ── Text reveal ── */
+@keyframes text-reveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.text-reveal {
+  animation: text-reveal 0.6s var(--ease);
+}
+
+/* ── Glow effect ── */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(201, 153, 58, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(201, 153, 58, 0.6);
+  }
+}
+
+.glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* ── Shimmer ── */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ── Accessibility: respect prefers-reduced-motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,420 @@
+/**
+ * game-table.css — Game table specific styles
+ */
+
+.game-table-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-table-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: linear-gradient(135deg, #2d7a4f 0%, #1a5233 65%, #123b24 100%);
+}
+
+/* Table Info Overlay */
+.table-info {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(10, 6, 3, 0.85);
+  border: 1px solid rgba(201, 153, 58, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  backdrop-filter: blur(6px);
+  display: flex;
+  gap: 16px;
+  z-index: 5;
+}
+
+.table-info span {
+  font-size: 12px;
+  color: var(--cream);
+}
+
+.round-number::before {
+  content: 'Round ';
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.deck-count::before {
+  content: 'Deck: ';
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+/* Community Pile Center */
+.community-pile-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 120px;
+  background: rgba(42, 42, 150, 0.1);
+  border: 2px dashed rgba(201, 153, 58, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Chair Styles (rendered on canvas, styling here for reference) */
+.chair {
+  position: absolute;
+  width: 56px;
+  height: 52px;
+  transform-origin: center center;
+}
+
+.chair-back {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 46px;
+  height: 11px;
+  background: #3d2006;
+  border: 1px solid #5a3010;
+  border-radius: 6px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.45);
+}
+
+.chair-seat {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 42px;
+  height: 30px;
+  background: #4a2808;
+  border: 1px solid #6a3a12;
+  border-radius: 5px;
+}
+
+.chair-cushion {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: 34px;
+  height: 23px;
+  background: #6b3e1a;
+  border: 0.5px solid #7a4820;
+  border-radius: 3px;
+}
+
+.chair-leg-l,
+.chair-leg-r {
+  position: absolute;
+  bottom: -12px;
+  width: 3px;
+  height: 12px;
+  background: #3d2006;
+  border-radius: 2px;
+}
+
+.chair-leg-l {
+  left: 8px;
+}
+
+.chair-leg-r {
+  right: 8px;
+}
+
+/* Player Position Overlay */
+.player-position {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.player-avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7a4a08, #a8652d);
+  border: 2px solid rgba(201, 153, 58, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.player-name-tag {
+  font-size: 11px;
+  color: var(--cream);
+  font-weight: 500;
+  white-space: nowrap;
+  background: rgba(10, 6, 3, 0.8);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(201, 153, 58, 0.2);
+}
+
+.player-status-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+  white-space: nowrap;
+  background: rgba(76, 175, 125, 0.2);
+  color: #4caf7d;
+}
+
+.player-status-badge.folded {
+  background: rgba(224, 82, 82, 0.2);
+  color: #e05252;
+}
+
+.player-status-badge.waiting {
+  background: rgba(200, 160, 60, 0.2);
+  color: #f0b429;
+}
+
+/* Table Felt Effects */
+.table-felt {
+  position: absolute;
+  inset: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #2d7a4f 0%, #1a5233 65%, #123b24 100%);
+  border: 2px solid #245e3c;
+  overflow: hidden;
+}
+
+.table-felt::before {
+  content: '';
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(36, 94, 60, 0.45);
+}
+
+.table-felt::after {
+  content: '';
+  position: absolute;
+  inset: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(36, 94, 60, 0.25);
+}
+
+/* Deck Display */
+.deck-display {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.deck-pile {
+  position: relative;
+  width: 60px;
+  height: 84px;
+}
+
+.deck-card {
+  position: absolute;
+  width: 60px;
+  height: 84px;
+  background: #2a2a96;
+  border: 1px solid #1a1a70;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: #6666dd;
+  overflow: hidden;
+}
+
+.deck-card::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid #4444bb;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.deck-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.09), transparent);
+  border-radius: 5px 5px 0 0;
+  pointer-events: none;
+}
+
+.deck-card:nth-child(1) {
+  top: 6px;
+  left: 5px;
+  z-index: 1;
+}
+
+.deck-card:nth-child(2) {
+  top: 4px;
+  left: 3px;
+  z-index: 2;
+}
+
+.deck-card:nth-child(3) {
+  top: 2px;
+  left: 1px;
+  z-index: 3;
+}
+
+.deck-card:nth-child(4) {
+  top: 0;
+  left: 0;
+  z-index: 4;
+}
+
+.deck-count-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Pot Display */
+.pot-display {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.pot-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold-dim);
+  font-weight: 500;
+}
+
+.pot-amount {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--gold-light);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .table-info {
+    font-size: 11px;
+    gap: 12px;
+  }
+
+  .table-info span {
+    font-size: 11px;
+  }
+
+  .player-avatar-circle {
+    width: 40px;
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .player-name-tag {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-info {
+    top: 8px;
+    left: 8px;
+    padding: 8px 10px;
+    gap: 10px;
+    font-size: 10px;
+  }
+
+  .table-info span {
+    font-size: 10px;
+  }
+
+  .player-avatar-circle {
+    width: 36px;
+    height: 36px;
+    font-size: 11px;
+  }
+
+  .player-name-tag {
+    font-size: 9px;
+  }
+
+  .player-status-badge {
+    font-size: 8px;
+  }
+
+  .pot-amount {
+    font-size: 20px;
+  }
+}
+
+/* Animation for table elements */
+@keyframes table-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.game-table-canvas {
+  animation: table-fade-in 0.6s ease;
+}
+
+/* Glow effect for active players */
+@keyframes player-glow {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(201, 153, 58, 0.4);
+  }
+}
+
+.player-avatar-circle.active {
+  animation: player-glow 2s ease-in-out infinite;
+}
+
+/* Pulse for turns */
+@keyframes turn-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.player-avatar-circle.current-turn {
+  animation: turn-pulse 1.5s ease-in-out infinite;
+}
