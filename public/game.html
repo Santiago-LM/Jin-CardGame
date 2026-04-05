@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Regalem — GYN Card Game</title>
+  <title>Regalem — Game</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -678,126 +678,6 @@
       color: var(--text-muted);
     }
 
-    /* Modal Styles */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 500;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-
-    .modal-backdrop.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .modal {
-      background: var(--black-3);
-      border: 1px solid rgba(201, 153, 58, 0.22);
-      border-radius: 12px;
-      width: 90%;
-      max-width: 500px;
-      transform: translateY(12px) scale(0.98);
-      transition: transform 0.25s var(--ease);
-      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
-    }
-
-    .modal-backdrop.open .modal {
-      transform: translateY(0) scale(1);
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 24px 0;
-    }
-
-    .modal-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--cream);
-    }
-
-    .modal-close {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      background: none;
-      border: none;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .modal-close:hover {
-      background: rgba(255, 255, 255, 0.07);
-      color: var(--cream);
-    }
-
-    .modal-body {
-      padding: 20px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-
-    .modal-footer {
-      display: flex;
-      gap: 10px;
-      padding: 0 24px 20px;
-      justify-content: flex-end;
-    }
-
-    .btn-modal-cancel,
-    .btn-modal-confirm {
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s ease;
-    }
-
-    .btn-modal-cancel {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--text-secondary);
-    }
-
-    .btn-modal-cancel:hover {
-      background: rgba(255, 255, 255, 0.09);
-      color: var(--cream);
-    }
-
-    .btn-modal-confirm {
-      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
-      color: var(--black);
-      font-weight: 600;
-    }
-
-    .btn-modal-confirm:hover {
-      box-shadow: 0 4px 20px rgba(201, 153, 58, 0.35);
-    }
-
-    .btn-modal-confirm:active {
-      transform: scale(0.98);
-    }
-
     /* Responsive */
     @media (max-width: 1400px) {
       .game-container {
@@ -863,6 +743,42 @@
   <script src="https://cdn.socket.io/4.7.0/socket.io.min.js"></script>
 
   <!-- Game initialization -->
-  <script type="module" src="/src/frontend/game.js"></script>
+  <script type="module">
+    import { StorageService } from '/src/frontend/services/StorageService.js';
+    import { Logger } from '/src/frontend/utils/logger.js';
+
+    Logger.setLevel('INFO');
+
+    // Check if user is logged in
+    const token = StorageService.load('token');
+    const user = StorageService.load('user');
+
+    if (!token || !user) {
+      // Redirect to login if not authenticated
+      Logger.warn('User not authenticated, redirecting to login');
+      window.location.href = '/login';
+    } else {
+      // User is authenticated, load the game
+      Logger.info(`✓ User authenticated: ${user.username}`);
+      
+      // Get game ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const gameId = urlParams.get('gameId') || urlParams.get('roomId');
+
+      if (!gameId) {
+        Logger.error('No game ID provided');
+        alert('No game specified. Redirecting...');
+        window.location.href = '/';
+      } else {
+        // Initialize game (placeholder)
+        console.log('Initializing game:', gameId);
+        console.log('Player:', user.username);
+        
+        // TODO: Load the actual game module
+        // import('/src/frontend/game.js');
+      }
+    }
+  </script>
+
 </body>
 </html>

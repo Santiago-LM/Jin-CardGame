@@ -38,8 +38,21 @@ const io = new Server(server, {
   },
 });
 
-// Middleware
-app.use(helmet());
+// Custom helmet configuration with relaxed CSP
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.socket.io"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "http://localhost:3000", "ws://localhost:3000", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:"],
+      frameSrc: ["'none'"],
+    },
+  },
+}));
+
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true,
@@ -64,6 +77,10 @@ app.use('/api/profile', profileRoutes);
 // Serve HTML pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 app.get('/game.html', (req, res) => {
