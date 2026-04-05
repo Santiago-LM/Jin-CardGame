@@ -2,10 +2,10 @@
  * Single game round management
  */
 
-const { CommunityPile } = require('./CommunityPile');
-const { CardDeck } = require('./CardDeck');
+import { CommunityPile } from './CommunityPile.js';
+import { CardDeck } from './CardDeck.js';
 
-class GameRound {
+export class GameRound {
   constructor(players, roundNumber = 1) {
     this.players = players;
     this.roundNumber = roundNumber;
@@ -172,5 +172,3 @@ class GameRound {
     };
   }
 }
-
-module.exports = { GameRound };

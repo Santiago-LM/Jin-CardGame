@@ -2,7 +2,7 @@
  * Game lifecycle event handlers
  */
 
-const gameHandlers = {
+export const gameHandlers = {
   /**
    * Handle player joining game
    */
@@ -111,5 +111,3 @@ const gameHandlers = {
     }
   },
 };
-
-module.exports = gameHandlers;

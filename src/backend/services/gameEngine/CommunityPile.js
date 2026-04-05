@@ -2,7 +2,7 @@
  * Community pile management
  */
 
-class CommunityPile {
+export class CommunityPile {
   constructor() {
     this.pile = [];
   }
@@ -86,5 +86,3 @@ class CommunityPile {
     return this.pile[0] || null;
   }
 }
-
-module.exports = { CommunityPile };

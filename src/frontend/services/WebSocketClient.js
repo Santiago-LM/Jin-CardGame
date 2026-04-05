@@ -2,6 +2,8 @@
  * WebSocket client wrapper with event handling
  */
 
+import { Logger } from '../utils/logger.js';
+
 export class WebSocketClient {
   constructor(url = 'http://localhost:3000') {
     this.socket = null;
@@ -10,23 +12,24 @@ export class WebSocketClient {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 1000;
-    this.pendingRequests = new Map();
-    this.requestIdCounter = 0;
-
-    this.connect();
+    this.token = null;
   }
 
   /**
    * Connect to socket server
    */
-  connect() {
-    // Check if Socket.io is available
+  connect(token = null) {
+    if (token) {
+      this.token = token;
+    }
+
     if (typeof io === 'undefined') {
-      console.error('Socket.io library not loaded');
+      Logger.error('Socket.io library not loaded');
       return;
     }
 
     this.socket = io(this.url, {
+      auth: { token: this.token },
       reconnection: true,
       reconnectionDelay: this.reconnectDelay,
       reconnectionDelayMax: 5000,
@@ -34,6 +37,7 @@ export class WebSocketClient {
     });
 
     this.setupListeners();
+    Logger.info('WebSocket connecting...');
   }
 
   /**
@@ -41,25 +45,26 @@ export class WebSocketClient {
    */
   setupListeners() {
     this.socket.on('connect', () => {
-      console.log('Connected to server');
+      Logger.info('✓ Connected to server');
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this.emit('connected', {});
     });
 
     this.socket.on('disconnect', () => {
-      console.log('Disconnected from server');
+      Logger.warn('✗ Disconnected from server');
       this.isConnected = false;
       this.emit('disconnected', {});
     });
 
     this.socket.on('reconnect_attempt', () => {
       this.reconnectAttempts++;
+      Logger.warn(`Reconnecting... (attempt ${this.reconnectAttempts})`);
       this.emit('reconnecting', { attempt: this.reconnectAttempts });
     });
 
     this.socket.on('error', (error) => {
-      console.error('Socket error:', error);
+      Logger.error('Socket error:', error);
       this.emit('error', { error });
     });
   }
@@ -72,8 +77,11 @@ export class WebSocketClient {
 
     this.socket.on(event, callback);
 
-    // Return unsubscribe function
-    return () => this.socket.off(event, callback);
+    return () => {
+      if (this.socket) {
+        this.socket.off(event, callback);
+      }
+    };
   }
 
   /**
@@ -81,7 +89,7 @@ export class WebSocketClient {
    */
   emit(event, data) {
     if (!this.socket) {
-      console.warn('Socket not connected, cannot emit:', event);
+      Logger.warn('Socket not connected, cannot emit:', event);
       return;
     }
 
@@ -89,7 +97,7 @@ export class WebSocketClient {
   }
 
   /**
-   * Emit with acknowledgment (server responds)
+   * Emit with acknowledgment
    */
   emitWithAck(event, data) {
     return new Promise((resolve, reject) => {
@@ -99,7 +107,7 @@ export class WebSocketClient {
 
       this.socket.emit(event, data, (response) => {
         if (response && response.success) {
-          resolve(response.data);
+          resolve(response.data || response);
         } else {
           reject(new Error(response?.error || 'Unknown error'));
         }
@@ -107,146 +115,61 @@ export class WebSocketClient {
     });
   }
 
-  /**
-   * Join game room
-   */
+  // Game operations
   joinGame(gameId, playerId, playerName) {
     this.emit('joinGame', { gameId, playerId, playerName });
   }
 
-  /**
-   * Leave game room
-   */
   leaveGame(gameId, playerId) {
     this.emit('leaveGame', { gameId, playerId });
   }
 
-  /**
-   * Get current game state
-   */
   getGameState() {
     return this.emitWithAck('getGameState', {});
   }
 
-  /**
-   * Play move
-   */
-  playMove(gameId, playerId, moveData) {
-    return this.emitWithAck('playMove', {
-      gameId,
-      playerId,
-      moveData,
-    });
-  }
-
-  /**
-   * Draw from deck
-   */
   drawFromDeck(gameId, playerId) {
-    return this.emitWithAck('drawFromDeck', {
-      gameId,
-      playerId,
-    });
+    return this.emitWithAck('drawFromDeck', { gameId, playerId });
   }
 
-  /**
-   * Draw from pile
-   */
   drawFromPile(gameId, playerId, cardIndex) {
-    return this.emitWithAck('drawFromPile', {
-      gameId,
-      playerId,
-      cardIndex,
-    });
+    return this.emitWithAck('drawFromPile', { gameId, playerId, cardIndex });
   }
 
-  /**
-   * Steal from pile
-   */
   stealFromPile(gameId, playerId, pileIndices, paymentCardId) {
-    return this.emitWithAck('stealFromPile', {
-      gameId,
-      playerId,
-      pileIndices,
-      paymentCardId,
-    });
+    return this.emitWithAck('stealFromPile', { gameId, playerId, pileIndices, paymentCardId });
   }
 
-  /**
-   * Play sets
-   */
   playSets(gameId, playerId, cardIds) {
-    return this.emitWithAck('playSets', {
-      gameId,
-      playerId,
-      cardIds,
-    });
+    return this.emitWithAck('playSets', { gameId, playerId, cardIds });
   }
 
-  /**
-   * Play JIN
-   */
   playJIN(gameId, playerId, cardIds) {
-    return this.emitWithAck('playJIN', {
-      gameId,
-      playerId,
-      cardIds,
-    });
+    return this.emitWithAck('playJIN', { gameId, playerId, cardIds });
   }
 
-  /**
-   * Discard cards
-   */
   discardCards(gameId, playerId, cardIds) {
-    return this.emitWithAck('discardCards', {
-      gameId,
-      playerId,
-      cardIds,
-    });
+    return this.emitWithAck('discardCards', { gameId, playerId, cardIds });
   }
 
-  /**
-   * Start game
-   */
   startGame(gameId, playerId) {
-    return this.emitWithAck('startGame', {
-      gameId,
-      playerId,
-    });
+    return this.emitWithAck('startGame', { gameId, playerId });
   }
 
-  /**
-   * Join as spectator
-   */
   joinAsSpectator(gameId, spectatorId) {
-    this.emit('joinAsSpectator', {
-      gameId,
-      spectatorId,
-    });
+    this.emit('joinAsSpectator', { gameId, spectatorId });
   }
 
-  /**
-   * Leave as spectator
-   */
   leaveAsSpectator(gameId, spectatorId) {
-    this.emit('leaveSpectator', {
-      gameId,
-      spectatorId,
-    });
+    this.emit('leaveSpectator', { gameId, spectatorId });
   }
 
-  /**
-   * Disconnect socket
-   */
   disconnect() {
     if (this.socket) {
       this.socket.disconnect();
     }
   }
 
-  /**
-   * Check if connected
-   */
   isConnectedToServer() {
     return this.isConnected && this.socket && this.socket.connected;
   }

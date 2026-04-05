@@ -1,5 +1,5 @@
 /**
- * Pub/sub event system for loosely coupled components
+ * Simple event bus for component communication
  */
 
 export class EventBus {
@@ -7,26 +7,17 @@ export class EventBus {
     this.events = {};
   }
 
-  /**
-   * Subscribe to event
-   */
   on(eventName, callback) {
     if (!this.events[eventName]) {
       this.events[eventName] = [];
     }
     this.events[eventName].push(callback);
 
-    // Return unsubscribe function
     return () => {
-      this.events[eventName] = this.events[eventName].filter(
-        cb => cb !== callback
-      );
+      this.events[eventName] = this.events[eventName].filter(cb => cb !== callback);
     };
   }
 
-  /**
-   * Emit event with data
-   */
   emit(eventName, data) {
     if (this.events[eventName]) {
       this.events[eventName].forEach(callback => {
@@ -39,9 +30,6 @@ export class EventBus {
     }
   }
 
-  /**
-   * Subscribe to event, auto-unsubscribe after first trigger
-   */
   once(eventName, callback) {
     const unsubscribe = this.on(eventName, (data) => {
       callback(data);
@@ -50,16 +38,10 @@ export class EventBus {
     return unsubscribe;
   }
 
-  /**
-   * Remove all listeners for event
-   */
   off(eventName) {
     delete this.events[eventName];
   }
 
-  /**
-   * Clear all events
-   */
   clear() {
     this.events = {};
   }

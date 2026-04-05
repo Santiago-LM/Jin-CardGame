@@ -20,3 +20,16 @@ export const DECK_CONFIG = {
   5: 2,
   6: 2,
 };
+
+export const SERVER_CONFIG = {
+  HOST: process.env.HOST || 'localhost',
+  PORT: process.env.PORT || 3000,
+  ENV: process.env.NODE_ENV || 'development',
+};
+
+export const TIMEOUTS = {
+  GAME_SETUP: GAME_SETUP_TIMEOUT,
+  MOVE: MOVE_TIMEOUT,
+  INACTIVITY_CHECK: INACTIVITY_CHECK_INTERVAL,
+  MAX_RECONNECT: MAX_RECONNECT_TIME,
+};

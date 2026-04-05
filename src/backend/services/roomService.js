@@ -2,11 +2,11 @@
  * Room/Game session management service
  */
 
-const { v4: uuidv4 } = require('uuid');
-const { GameSession } = require('./gameEngine/GameSession');
-const { GAME_RULES } = require('../../shared/constants');
+import { v4 as uuidv4 } from 'uuid';
+import { GameSession } from './gameEngine/GameSession.js';
+import { GAME_RULES } from '../../shared/constants.js';
 
-class RoomService {
+export class RoomService {
   constructor() {
     this.rooms = new Map();
     this.inactivityCheckInterval = setInterval(() => {
@@ -169,5 +169,3 @@ class RoomService {
     };
   }
 }
-
-module.exports = { RoomService };

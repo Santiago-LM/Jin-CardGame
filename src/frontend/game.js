@@ -6,43 +6,37 @@ import { GamePage } from './pages/GamePage.js';
 import { WebSocketClient } from './services/WebSocketClient.js';
 import { GameStateManager } from './state/GameStateManager.js';
 import { APIService } from './services/APIService.js';
+import { Logger } from './utils/logger.js';
+
+Logger.setLevel('INFO');
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // Check authentication
-    const apiService = new APIService();
-    const user = await apiService.getCurrentUser();
+    Logger.info('🎴 Game Page Loading...');
 
-    if (!user) {
+    // Check authentication
+    const token = window.regalem?.storage.load('token');
+    const user = window.regalem?.storage.load('user');
+
+    if (!token || !user) {
       window.location.href = '/';
       return;
     }
 
     // Initialize services
-    const socket = new WebSocketClient();
+    const apiService = new APIService();
+    apiService.setToken(token);
+    
+    const socketClient = new WebSocketClient();
     const gameState = new GameStateManager();
 
-    // Get game ID from URL
-    const gameId = new URLSearchParams(window.location.search).get('game');
-    if (!gameId) {
-      window.location.href = '/';
-      return;
-    }
-
-    // Set initial game state
-    gameState.setState({
-      gameId,
-      playerId: user._id,
-      playerName: user.username,
-    });
-
     // Initialize game page
-    const gamePage = new GamePage(socket, gameState);
+    const gamePage = new GamePage(socketClient, gameState, apiService);
     window.gamePage = gamePage;
 
     await gamePage.init();
   } catch (error) {
-    console.error('Game initialization failed:', error);
+    Logger.error('Game initialization failed', error);
     alert('Failed to initialize game. Redirecting...');
     window.location.href = '/';
   }

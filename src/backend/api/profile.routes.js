@@ -1,17 +1,14 @@
-/**
- * User profile routes
- */
-
-const express = require('express');
-const { ProfileService } = require('../services/profileService');
-const { auth } = require('../middleware/auth.middleware');
+import express from 'express';
+import { ProfileService } from '../services/profileService.js';
+import { auth } from '../middleware/auth.middleware.js';
+import { validateUserId, validateProfileUpdate } from '../middleware/validation.middleware.js';
 
 const router = express.Router();
 
 /**
  * GET /api/profile/:userId
  */
-router.get('/:userId', async (req, res, next) => {
+router.get('/:userId', validateUserId, async (req, res, next) => {
   try {
     const profile = await ProfileService.getUserProfile(req.params.userId);
     res.json(profile);
@@ -23,7 +20,7 @@ router.get('/:userId', async (req, res, next) => {
 /**
  * PUT /api/profile/:userId
  */
-router.put('/:userId', auth, async (req, res, next) => {
+router.put('/:userId', auth, validateUserId, validateProfileUpdate, async (req, res, next) => {
   try {
     if (req.userId !== req.params.userId) {
       return res.status(403).json({ error: 'Unauthorized' });
@@ -39,7 +36,7 @@ router.put('/:userId', auth, async (req, res, next) => {
 /**
  * GET /api/profile/:userId/history
  */
-router.get('/:userId/history', async (req, res, next) => {
+router.get('/:userId/history', validateUserId, async (req, res, next) => {
   try {
     const limit = parseInt(req.query.limit) || 50;
     const history = await ProfileService.getGameHistory(req.params.userId, limit);
@@ -52,7 +49,7 @@ router.get('/:userId/history', async (req, res, next) => {
 /**
  * GET /api/profile/:userId/stats
  */
-router.get('/:userId/stats', async (req, res, next) => {
+router.get('/:userId/stats', validateUserId, async (req, res, next) => {
   try {
     const stats = await ProfileService.getStatsByMode(req.params.userId);
     res.json(stats);
@@ -61,4 +58,4 @@ router.get('/:userId/stats', async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

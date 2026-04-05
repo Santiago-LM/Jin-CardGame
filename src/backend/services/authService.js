@@ -2,11 +2,11 @@
  * Authentication service
  */
 
-const jwt = require('jsonwebtoken');
-const { User } = require('../models/User');
-const { JWT_SECRET } = require('../config/env');
+import jwt from 'jsonwebtoken';
+import { User } from '../models/User.js';
+import { JWT_SECRET } from '../config/env.js';
 
-class AuthService {
+export class AuthService {
   /**
    * Register user
    */
@@ -89,5 +89,3 @@ class AuthService {
     return user;
   }
 }
-
-module.exports = { AuthService };

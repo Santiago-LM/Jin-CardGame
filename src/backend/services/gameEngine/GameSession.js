@@ -2,13 +2,13 @@
  * Manages a single game session/room
  */
 
-const { v4: uuidv4 } = require('uuid');
-const { Player } = require('./Player');
-const { GameRound } = require('./GameRound');
-const { ScoringEngine } = require('./ScoringEngine');
-const { GAME_RULES, GAME_STATUS } = require('../../../shared/constants');
+import { v4 as uuidv4 } from 'uuid';
+import { Player } from './Player.js';
+import { GameRound } from './GameRound.js';
+import { ScoringEngine } from './ScoringEngine.js';
+import { GAME_RULES, GAME_STATUS } from '../../../shared/constants.js';
 
-class GameSession {
+export class GameSession {
   constructor(gameId, playerIds, playerNames = {}, gameMode = 'casual') {
     this.gameId = gameId;
     this.gameMode = gameMode;
@@ -298,5 +298,3 @@ class GameSession {
     };
   }
 }
-
-module.exports = { GameSession };

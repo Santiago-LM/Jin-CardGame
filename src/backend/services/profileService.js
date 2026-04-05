@@ -2,10 +2,10 @@
  * User profile service
  */
 
-const { User } = require('../models/User');
-const { GameRecord } = require('../models/GameRecord');
+import { User } from '../models/User.js';
+import { GameRecord } from '../models/GameRecord.js';
 
-class ProfileService {
+export class ProfileService {
   /**
    * Get user profile
    */
@@ -126,5 +126,3 @@ class ProfileService {
     return statsByMode;
   }
 }
-
-module.exports = { ProfileService };

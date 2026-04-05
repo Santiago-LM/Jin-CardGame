@@ -2,10 +2,10 @@
  * Card deck management
  */
 
-const { v4: uuidv4 } = require('uuid');
-const { CARD_RANKS, CARD_SUITS, PLAYER_LIMITS } = require('../../../shared/constants');
+import { v4 as uuidv4 } from 'uuid';
+import { CARD_RANKS, CARD_SUITS, PLAYER_LIMITS } from '../../../shared/constants.js';
 
-class CardDeck {
+export class CardDeck {
   constructor(playerCount = 2) {
     this.playerCount = playerCount;
     this.deckMultiplier = PLAYER_LIMITS[playerCount] || 1;
@@ -140,5 +140,3 @@ class CardDeck {
     };
   }
 }
-
-module.exports = { CardDeck };

@@ -2,7 +2,7 @@
  * Spectator event handlers
  */
 
-const spectatorHandlers = {
+export const spectatorHandlers = {
   /**
    * Handle spectator join
    */
@@ -57,5 +57,3 @@ const spectatorHandlers = {
     }
   },
 };
-
-module.exports = spectatorHandlers;

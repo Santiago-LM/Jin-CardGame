@@ -1,9 +1,5 @@
-/**
- * Game state and moves routes
- */
-
-const express = require('express');
-const { auth } = require('../middleware/auth.middleware');
+import express from 'express';
+import { auth } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -12,7 +8,6 @@ const router = express.Router();
  */
 router.get('/:gameId/state', auth, (req, res, next) => {
   try {
-    // Get game state from room service (via socket)
     res.json({ message: 'Use WebSocket for real-time game state' });
   } catch (error) {
     next(error);
@@ -30,4 +25,4 @@ router.get('/:gameId/history', auth, (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

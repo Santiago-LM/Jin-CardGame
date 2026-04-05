@@ -2,9 +2,9 @@
  * Authentication middleware
  */
 
-const { AuthService } = require('../services/authService');
+import { AuthService } from '../services/authService.js';
 
-const auth = (req, res, next) => {
+export const auth = (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
 
@@ -20,5 +20,3 @@ const auth = (req, res, next) => {
     res.status(401).json({ error: 'Invalid token' });
   }
 };
-
-module.exports = { auth };

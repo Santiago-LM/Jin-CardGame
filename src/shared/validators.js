@@ -101,18 +101,6 @@ export function getRankNumber(rank) {
 }
 
 /**
- * Get card point value
- */
-export function getCardValue(card) {
-  if (card.rank === 'A' && card.suit === 'HEARTS') return 100;
-  if (card.rank === 'Q' && card.suit === 'SPADES') return 50;
-  if (card.rank === 'JOKER' || card.rank === '2') return 20;
-  if (card.rank === 'A') return 20;
-  if (['9', '10', 'J', 'Q', 'K'].includes(card.rank)) return 10;
-  return 5; // 3-8
-}
-
-/**
  * Check if valid set or straight
  */
 export function isValidGameSet(cards) {

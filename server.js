@@ -19,6 +19,7 @@ import roomsRoutes from './src/backend/api/rooms.routes.js';
 import gamesRoutes from './src/backend/api/games.routes.js';
 import leaderboardRoutes from './src/backend/api/leaderboard.routes.js';
 import profileRoutes from './src/backend/api/profile.routes.js';
+import { FRONTEND_URL, PORT } from './src/backend/config/env.js';
 
 // Initialize environment variables
 dotenv.config();
@@ -32,16 +33,23 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: FRONTEND_URL,
     credentials: true,
   },
 });
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: FRONTEND_URL,
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve frontend source files
+app.use('/src/frontend', express.static(path.join(__dirname, 'src/frontend')));
+app.use('/src/shared', express.static(path.join(__dirname, 'src/shared')));
 
 // Database connection
 connectDatabase();
@@ -52,6 +60,15 @@ app.use('/api/rooms', roomsRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/profile', profileRoutes);
+
+// Serve HTML pages
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/game.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'game.html'));
+});
 
 // WebSocket
 socketManager(io);
@@ -65,9 +82,13 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`\n🎴 Regalem Server`);
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━`);
+  console.log(`✓ Server running on port ${PORT}`);
+  console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`✓ Frontend URL: ${FRONTEND_URL}`);
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━\n`);
 });
 
 export { app, server, io };

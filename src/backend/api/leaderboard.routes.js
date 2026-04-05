@@ -1,10 +1,6 @@
-/**
- * Leaderboard routes
- */
-
-const express = require('express');
-const { LeaderboardService } = require('../services/leaderboardService');
-const { auth } = require('../middleware/auth.middleware');
+import express from 'express';
+import { LeaderboardService } from '../services/leaderboardService.js';
+import { auth } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -49,4 +45,4 @@ router.get('/rank/:userId', async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,32 +1,40 @@
 /**
  * Centralized game state with subscription pattern
- * Single source of truth for all game data
  */
+
+import { EventBus } from './EventBus.js';
 
 export class GameStateManager {
   constructor() {
     this.state = {
+      // Game info
       gameId: null,
       playerId: null,
       playerName: null,
+      gameMode: 'casual',
+      status: 'WAITING',
+
+      // Players
       players: [],
       currentPlayerIndex: 0,
       currentPlayerId: null,
+      spectators: [],
+
+      // Game state
       playerHand: [],
       communityPile: [],
       deckSize: 0,
       round: 1,
-      status: 'WAITING', // WAITING | IN_PROGRESS | ROUND_END | GAME_END
       scores: {},
       history: [],
-      isSpectating: false,
-      spectators: [],
-      inactivityWarning: false,
-      moveInProgress: false,
+
+      // UI state
       selectedCards: new Set(),
       selectedPileIndices: new Set(),
-      gameMode: 'casual',
+      moveInProgress: false,
       lastError: null,
+      inactivityWarning: false,
+      isSpectating: false,
     };
 
     this.subscribers = [];
@@ -34,7 +42,7 @@ export class GameStateManager {
   }
 
   /**
-   * Update state and notify all subscribers
+   * Update state and notify subscribers
    */
   setState(updates) {
     this.state = { ...this.state, ...updates };
@@ -43,18 +51,16 @@ export class GameStateManager {
 
   /**
    * Subscribe to state changes
-   * Callback receives entire state object
    */
   subscribe(callback) {
     this.subscribers.push(callback);
-    // Return unsubscribe function
     return () => {
       this.subscribers = this.subscribers.filter(cb => cb !== callback);
     };
   }
 
   /**
-   * Notify all subscribers of state change
+   * Notify all subscribers
    */
   notifySubscribers() {
     this.subscribers.forEach(callback => {
@@ -105,19 +111,15 @@ export class GameStateManager {
       status: 'WAITING',
       scores: {},
       history: [],
-      isSpectating: false,
-      spectators: [],
-      inactivityWarning: false,
-      moveInProgress: false,
       selectedCards: new Set(),
       selectedPileIndices: new Set(),
+      moveInProgress: false,
       lastError: null,
+      inactivityWarning: false,
     });
   }
 
-  /**
-   * Add card to selected
-   */
+  // Card selection
   selectCard(cardId) {
     const selected = new Set(this.state.selectedCards);
     if (selected.has(cardId)) {
@@ -128,66 +130,43 @@ export class GameStateManager {
     this.setState({ selectedCards: selected });
   }
 
-  /**
-   * Clear selected cards
-   */
   clearSelectedCards() {
     this.setState({ selectedCards: new Set() });
   }
 
-  /**
-   * Add pile index to selected
-   */
   selectPileIndex(index) {
-    const selected = new Set(this.state.selectedPileIndices);
-    // Selecting a pile card means taking all cards above it
-    selected.clear();
+    const selected = new Set();
     for (let i = 0; i <= index; i++) {
       selected.add(i);
     }
     this.setState({ selectedPileIndices: selected });
   }
 
-  /**
-   * Clear selected pile indices
-   */
   clearSelectedPileIndices() {
     this.setState({ selectedPileIndices: new Set() });
   }
 
-  /**
-   * Set error
-   */
+  // Error handling
   setError(error) {
     this.setState({ lastError: error });
   }
 
-  /**
-   * Clear error
-   */
   clearError() {
     this.setState({ lastError: null });
   }
 
-  /**
-   * Set move in progress
-   */
+  // Move status
   setMoveInProgress(inProgress) {
     this.setState({ moveInProgress: inProgress });
   }
 
-  /**
-   * Is current player
-   */
+  // Helper methods
   isCurrentPlayer(playerId = null) {
     const id = playerId || this.state.playerId;
     const player = this.state.players[this.state.currentPlayerIndex];
     return player && player.id === id;
   }
 
-  /**
-   * Get current player
-   */
   getCurrentPlayer() {
     return this.state.players[this.state.currentPlayerIndex] || null;
   }

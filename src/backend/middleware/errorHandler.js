@@ -1,8 +1,8 @@
 /**
- * Global error handler
+ * Global error handler middleware
  */
 
-const errorHandler = (error, req, res, next) => {
+export const errorHandler = (error, req, res, next) => {
   console.error('[Error]', error.message);
 
   const statusCode = error.statusCode || 500;
@@ -13,5 +13,3 @@ const errorHandler = (error, req, res, next) => {
     ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
   });
 };
-
-module.exports = { errorHandler };

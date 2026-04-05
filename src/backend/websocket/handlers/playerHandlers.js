@@ -2,12 +2,12 @@
  * Player connection event handlers
  */
 
-const playerHandlers = {
+export const playerHandlers = {
   /**
    * Handle player disconnect
    */
   handleDisconnect(socket) {
-    console.log(`Player disconnected: ${socket.id}`);
+    console.log(`[Disconnect] Player: ${socket.id}`);
 
     // Find which game this socket is in
     const gameId = Array.from(socket.rooms).find(room => room !== socket.id);
@@ -23,7 +23,7 @@ const playerHandlers = {
         if (playerId) {
           room.gameSession.handleDisconnect(playerId);
 
-          // Start inactivity timer
+          // Start inactivity timer (3 minutes)
           setTimeout(() => {
             const inactiveIds = room.gameSession.checkInactivity();
             if (inactiveIds.includes(playerId)) {
@@ -44,7 +44,7 @@ const playerHandlers = {
    * Handle player reconnect
    */
   handleReconnect(socket) {
-    console.log(`Player reconnected: ${socket.id}`);
+    console.log(`[Reconnect] Player: ${socket.id}`);
 
     const gameId = Array.from(socket.rooms).find(room => room !== socket.id);
 
@@ -68,5 +68,3 @@ const playerHandlers = {
     }
   },
 };
-
-module.exports = playerHandlers;

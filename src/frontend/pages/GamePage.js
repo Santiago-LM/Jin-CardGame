@@ -10,11 +10,13 @@ import { ActionPanel } from '../components/ActionPanel.js';
 import { RoundInfo } from '../components/RoundInfo.js';
 import { ScoreBoardModal } from '../components/ScoreBoardModal.js';
 import { JINAnimation } from '../components/JINAnimation.js';
+import { Logger } from '../utils/logger.js';
 
 export class GamePage {
-  constructor(webSocketClient, gameStateManager) {
+  constructor(webSocketClient, gameStateManager, apiService) {
     this.socket = webSocketClient;
     this.gameState = gameStateManager;
+    this.api = apiService;
     this.components = {};
     this.unsubscribers = [];
     this.inactivityTimer = null;
@@ -24,29 +26,48 @@ export class GamePage {
    * Initialize game page
    */
   async init() {
-    console.log('Initializing GamePage...');
+    Logger.info('Initializing GamePage...');
 
-    // Setup state subscription
-    this.unsubscribers.push(
-      this.gameState.subscribe((state) => this.onStateChange(state))
-    );
-
-    // Initialize components
-    this.initializeComponents();
-
-    // Setup socket listeners
-    this.setupSocketListeners();
-
-    // Setup inactivity timer
-    this.setupInactivityTimer();
-
-    // Request initial game state
     try {
+      // Get room ID from URL
+      const roomId = new URLSearchParams(window.location.search).get('roomId');
+      if (!roomId) {
+        window.location.href = '/';
+        return;
+      }
+
+      // Get user info
+      const user = window.regalem.storage.load('user');
+      if (!user) {
+        window.location.href = '/';
+        return;
+      }
+
+      // Update state with room and player info
+      this.gameState.setState({
+        gameId: roomId,
+        playerId: user._id,
+        playerName: user.username,
+      });
+
+      // Initialize components
+      this.initializeComponents();
+
+      // Setup socket listeners
+      this.setupSocketListeners();
+
+      // Setup inactivity timer
+      this.setupInactivityTimer();
+
+      // Request initial game state
       const state = await this.socket.getGameState();
       this.gameState.setState(state);
+
+      Logger.info('GamePage initialized successfully');
     } catch (error) {
-      console.error('Failed to load game:', error);
-      this.gameState.setError('Failed to load game state');
+      Logger.error('GamePage initialization failed', error);
+      alert('Failed to load game');
+      window.location.href = '/';
     }
   }
 
@@ -84,224 +105,164 @@ export class GamePage {
     if (roundInfoEl) {
       this.components.roundInfo = new RoundInfo(roundInfoEl, this.gameState);
     }
+
+    Logger.info('All components initialized');
   }
 
   /**
    * Setup WebSocket event listeners
    */
   setupSocketListeners() {
-    // Game state updates
     this.unsubscribers.push(
       this.socket.on('gameStateUpdated', (state) => {
         this.gameState.setState(state);
       })
     );
 
-    // Move applied
     this.unsubscribers.push(
       this.socket.on('moveApplied', (moveData) => {
         this.handleMoveApplied(moveData);
       })
     );
 
-    // Move rejected
     this.unsubscribers.push(
       this.socket.on('moveRejected', (rejectData) => {
         this.handleMoveRejected(rejectData);
       })
     );
 
-    // Round end
     this.unsubscribers.push(
       this.socket.on('roundEnd', (roundData) => {
         this.handleRoundEnd(roundData);
       })
     );
 
-    // JIN played
     this.unsubscribers.push(
       this.socket.on('jinPlayed', (data) => {
         this.handleJINPlayed(data);
       })
     );
 
-    // Player disconnected
     this.unsubscribers.push(
       this.socket.on('playerDisconnected', (playerData) => {
         this.handlePlayerDisconnect(playerData);
       })
     );
 
-    // Player reconnected
     this.unsubscribers.push(
       this.socket.on('playerReconnected', (playerData) => {
         this.handlePlayerReconnect(playerData);
       })
     );
 
-    // Player kicked
     this.unsubscribers.push(
       this.socket.on('playerKicked', (data) => {
         this.handlePlayerKicked(data);
       })
     );
 
-    // Error
     this.unsubscribers.push(
       this.socket.on('error', (error) => {
         this.gameState.setError(error.message);
       })
     );
+
+    Logger.info('Socket listeners setup');
   }
 
   /**
    * Setup inactivity timer (3 minutes)
    */
   setupInactivityTimer() {
-    const INACTIVITY_WARNING_TIME = 2.5 * 60 * 1000; // 2.5 minutes
-    const INACTIVITY_KICK_TIME = 3 * 60 * 1000; // 3 minutes
+    const INACTIVITY_WARNING_TIME = 2.5 * 60 * 1000;
+    const INACTIVITY_KICK_TIME = 3 * 60 * 1000;
 
-    this.resetInactivityTimer = () => {
+    const resetTimer = () => {
       if (this.inactivityTimer) {
         clearTimeout(this.inactivityTimer);
       }
 
       this.inactivityTimer = setTimeout(() => {
         this.gameState.setState({ inactivityWarning: true });
+        Logger.warn('Inactivity warning triggered');
 
         setTimeout(() => {
-          console.log('Player kicked due to inactivity');
+          Logger.info('Player kicked due to inactivity');
           this.destroy();
           window.location.href = '/';
         }, INACTIVITY_KICK_TIME - INACTIVITY_WARNING_TIME);
       }, INACTIVITY_WARNING_TIME);
     };
 
-    // Reset on any user activity
-    document.addEventListener('click', () => this.resetInactivityTimer());
-    document.addEventListener('keydown', () => this.resetInactivityTimer());
+    document.addEventListener('click', () => resetTimer());
+    document.addEventListener('keydown', () => resetTimer());
 
-    this.resetInactivityTimer();
+    resetTimer();
   }
 
-  /**
-   * Handle state change
-   */
-  onStateChange(state) {
-    // Components automatically update via their own subscriptions
-  }
-
-  /**
-   * Handle successful move
-   */
   handleMoveApplied(moveData) {
-    console.log('Move applied:', moveData);
+    Logger.info('Move applied:', moveData);
     this.gameState.setMoveInProgress(false);
     this.gameState.clearSelectedCards();
     this.gameState.clearSelectedPileIndices();
   }
 
-  /**
-   * Handle rejected move
-   */
   handleMoveRejected(rejectData) {
-    console.warn('Move rejected:', rejectData.reason);
+    Logger.warn('Move rejected:', rejectData.reason);
     this.gameState.setMoveInProgress(false);
     this.gameState.setError(rejectData.reason);
-
-    // Shake animation on hand
-    const handEl = document.getElementById('playerHand');
-    if (handEl) {
-      handEl.classList.add('shake');
-      setTimeout(() => handEl.classList.remove('shake'), 400);
-    }
   }
 
-  /**
-   * Handle round end
-   */
   handleRoundEnd(roundData) {
-    console.log('Round ended:', roundData);
-
-    // Show scoreboard modal
+    Logger.info('Round ended:', roundData);
     const scoreboardEl = document.getElementById('scoreboardModal');
     if (scoreboardEl) {
       const scoreboard = new ScoreBoardModal(scoreboardEl, roundData.scores);
       scoreboard.show();
-
-      setTimeout(() => {
-        scoreboard.hide();
-      }, 5000);
     }
   }
 
-  /**
-   * Handle JIN played
-   */
   handleJINPlayed(data) {
-    console.log('JIN played:', data);
-
-    // Show JIN animation
+    Logger.info('JIN played:', data);
     const jinEl = document.getElementById('jinAnimation');
     if (jinEl) {
       const jinAnim = new JINAnimation(jinEl);
       jinAnim.play();
     }
-
-    // Play sound
-    if (this.components.soundService) {
-      this.components.soundService.playJIN();
-    }
   }
 
-  /**
-   * Handle player disconnect
-   */
   handlePlayerDisconnect(playerData) {
-    console.warn('Player disconnected:', playerData.playerId);
+    Logger.warn('Player disconnected:', playerData);
     this.gameState.setError(`${playerData.playerName} disconnected`);
   }
 
-  /**
-   * Handle player reconnect
-   */
   handlePlayerReconnect(playerData) {
-    console.log('Player reconnected:', playerData.playerId);
+    Logger.info('Player reconnected:', playerData);
     this.gameState.clearError();
   }
 
-  /**
-   * Handle player kicked
-   */
   handlePlayerKicked(data) {
-    console.log('Player kicked:', data.reason);
+    Logger.info('Player kicked:', data.reason);
     alert(`You have been removed from the game: ${data.reason}`);
     this.destroy();
     window.location.href = '/';
   }
 
-  /**
-   * Cleanup on page unload
-   */
   destroy() {
-    console.log('Destroying GamePage...');
+    Logger.info('Destroying GamePage...');
 
-    // Unsubscribe from all events
     this.unsubscribers.forEach(unsub => unsub());
 
-    // Cleanup inactivity timer
     if (this.inactivityTimer) {
       clearTimeout(this.inactivityTimer);
     }
 
-    // Cleanup components
     Object.values(this.components).forEach(component => {
       if (component && typeof component.destroy === 'function') {
         component.destroy();
       }
     });
 
-    // Leave game
     if (this.gameState.state.gameId && this.gameState.state.playerId) {
       this.socket.leaveGame(
         this.gameState.state.gameId,

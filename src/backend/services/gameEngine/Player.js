@@ -2,7 +2,7 @@
  * Player entity and state management
  */
 
-class Player {
+export class Player {
   constructor(playerId, playerName = '') {
     this.id = playerId;
     this.name = playerName;
@@ -149,5 +149,3 @@ class Player {
     };
   }
 }
-
-module.exports = { Player };

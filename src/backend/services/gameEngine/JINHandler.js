@@ -2,7 +2,7 @@
  * JIN (all-in play) mechanics
  */
 
-class JINHandler {
+export class JINHandler {
   /**
    * Validate JIN play
    */
@@ -61,5 +61,3 @@ class JINHandler {
     };
   }
 }
-
-module.exports = { JINHandler };

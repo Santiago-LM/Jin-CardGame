@@ -2,10 +2,10 @@
  * Leaderboard and statistics service
  */
 
-const { User } = require('../models/User');
-const { GameRecord } = require('../models/GameRecord');
+import { User } from '../models/User.js';
+import { GameRecord } from '../models/GameRecord.js';
 
-class LeaderboardService {
+export class LeaderboardService {
   /**
    * Get global leaderboard
    */
@@ -137,5 +137,3 @@ class LeaderboardService {
     };
   }
 }
-
-module.exports = { LeaderboardService };

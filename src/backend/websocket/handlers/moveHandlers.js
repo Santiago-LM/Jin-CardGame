@@ -2,7 +2,7 @@
  * Game move event handlers
  */
 
-const moveHandlers = {
+export const moveHandlers = {
   /**
    * Handle play move (generic)
    */
@@ -182,7 +182,7 @@ const moveHandlers = {
 
     try {
       const { cardIds } = data;
-      const room = socket.roomService.getGame(gameId);
+      const room = socket.roomService.getRoom(gameId);
 
       if (!room) {
         return callback({ success: false, error: 'Game not found' });
@@ -241,5 +241,3 @@ const moveHandlers = {
     }
   },
 };
-
-module.exports = moveHandlers;

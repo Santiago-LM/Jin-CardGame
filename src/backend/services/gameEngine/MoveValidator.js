@@ -2,10 +2,10 @@
  * Move validation
  */
 
-const { isValidGameSet, isValidSteal, isWildCard } = require('../../../shared/validators');
-const { GAME_RULES } = require('../../../shared/constants');
+import { isValidGameSet, isValidSteal, isWildCard } from '../../../shared/validators.js';
+import { GAME_RULES } from '../../../shared/constants.js';
 
-class MoveValidator {
+export class MoveValidator {
   /**
    * Validate move type and execution
    */
@@ -137,5 +137,3 @@ class MoveValidator {
     return { valid: true };
   }
 }
-
-module.exports = { MoveValidator };
