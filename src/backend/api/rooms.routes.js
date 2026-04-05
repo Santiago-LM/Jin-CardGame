@@ -13,7 +13,7 @@ router.post('/create', auth, validateGameConfig, (req, res, next) => {
   try {
     const { roomConfig } = req.body;
     console.log(`[API] Creating room for user ${req.userId}`, roomConfig);
-    
+
     const room = roomService.createRoom(req.userId, roomConfig);
 
     res.status(201).json({
@@ -35,7 +35,7 @@ router.get('/public', (req, res, next) => {
   try {
     const rooms = roomService.getPublicRooms();
     console.log(`[API] Fetching public rooms, found ${rooms.length}`);
-    
+
     res.json({
       success: true,
       rooms,
@@ -54,9 +54,9 @@ router.get('/:roomId', validateRoomId, (req, res, next) => {
     const room = roomService.getRoom(req.params.roomId);
 
     if (!room) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Room not found' 
+        error: 'Room not found',
       });
     }
 
@@ -84,9 +84,9 @@ router.get('/:roomId/status', validateRoomId, (req, res, next) => {
     const status = roomService.getRoomStatus(req.params.roomId);
 
     if (!status) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Room not found' 
+        error: 'Room not found',
       });
     }
 
@@ -105,9 +105,12 @@ router.get('/:roomId/status', validateRoomId, (req, res, next) => {
 router.post('/:roomId/join', auth, validateRoomId, (req, res, next) => {
   try {
     const { playerName } = req.body;
-    
+
     if (!playerName || typeof playerName !== 'string' || playerName.trim() === '') {
-      return res.status(400).json({ error: 'Valid player name is required' });
+      return res.status(400).json({
+        success: false,
+        error: 'Valid player name is required',
+      });
     }
 
     console.log(`[API] Player ${req.userId} joining room ${req.params.roomId}`);
@@ -122,7 +125,10 @@ router.post('/:roomId/join', auth, validateRoomId, (req, res, next) => {
     });
   } catch (error) {
     if (error.message.includes('full')) {
-      return res.status(400).json({ success: false, error: error.message });
+      return res.status(400).json({
+        success: false,
+        error: error.message,
+      });
     }
     next(error);
   }
@@ -135,8 +141,8 @@ router.post('/:roomId/leave', auth, validateRoomId, (req, res, next) => {
   try {
     console.log(`[API] Player ${req.userId} leaving room ${req.params.roomId}`);
     roomService.leaveRoom(req.params.roomId, req.userId);
-    
-    res.json({ 
+
+    res.json({
       success: true,
       message: 'Successfully left the room',
     });
@@ -153,15 +159,24 @@ router.post('/:roomId/start', auth, validateRoomId, (req, res, next) => {
     const room = roomService.getRoom(req.params.roomId);
 
     if (!room) {
-      return res.status(404).json({ success: false, error: 'Room not found' });
+      return res.status(404).json({
+        success: false,
+        error: 'Room not found',
+      });
     }
 
     if (room.hostId !== req.userId) {
-      return res.status(403).json({ success: false, error: 'Only the host can start the game' });
+      return res.status(403).json({
+        success: false,
+        error: 'Only the host can start the game',
+      });
     }
 
     if (room.players.length < 2) {
-      return res.status(400).json({ success: false, error: 'Need at least 2 players to start' });
+      return res.status(400).json({
+        success: false,
+        error: 'Need at least 2 players to start',
+      });
     }
 
     console.log(`[API] Starting game in room ${req.params.roomId}`);

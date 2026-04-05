@@ -2,21 +2,30 @@
  * Authentication middleware
  */
 
-import { AuthService } from '../services/authService.js';
+import jwt from 'jsonwebtoken';
 
-export const auth = (req, res, next) => {
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+export function auth(req, res, next) {
   try {
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({ error: 'No token provided' });
+      return res.status(401).json({
+        success: false,
+        error: 'No token provided',
+      });
     }
 
-    const decoded = AuthService.verifyToken(token);
-    req.userId = decoded.userId;
-    req.token = token;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.userId = decoded.id;
+    req.user = decoded;
+
     next();
   } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid token',
+    });
   }
-};
+}

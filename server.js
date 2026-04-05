@@ -12,6 +12,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { connectDatabase } from './src/backend/config/database.js';
+import { User } from './src/backend/models/User.js';
 import { errorHandler } from './src/backend/middleware/errorHandler.js';
 import { socketManager } from './src/backend/websocket/socketManager.js';
 import authRoutes from './src/backend/api/auth.routes.js';
@@ -39,24 +40,34 @@ const io = new Server(server, {
 });
 
 // Custom helmet configuration with relaxed CSP
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.socket.io"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "http://localhost:3000", "ws://localhost:3000", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:"],
-      frameSrc: ["'none'"],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.socket.io'],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        connectSrc: [
+          "'self'",
+          'http://localhost:3000',
+          'ws://localhost:3000',
+          'https://fonts.googleapis.com',
+          'https://fonts.gstatic.com',
+        ],
+        imgSrc: ["'self'", 'data:'],
+        frameSrc: ["'none'"],
+      },
     },
-  },
-}));
+  })
+);
 
-app.use(cors({
-  origin: FRONTEND_URL,
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -66,6 +77,29 @@ app.use('/src/shared', express.static(path.join(__dirname, 'src/shared')));
 
 // Database connection
 connectDatabase();
+
+// Fix database indexes on startup
+async function fixIndexes() {
+  try {
+    console.log('🔧 Fixing database indexes...');
+
+    // Drop old indexes
+    await User.collection.dropIndexes();
+    console.log('✓ Old indexes dropped');
+
+    // Create new indexes
+    await User.collection.createIndexes();
+    console.log('✓ New indexes created');
+  } catch (error) {
+    if (error.message.includes('no indexes to drop')) {
+      console.log('✓ No old indexes to drop');
+    } else {
+      console.error('Index error:', error.message);
+    }
+  }
+}
+
+fixIndexes();
 
 // API Routes
 app.use('/api/auth', authRoutes);
