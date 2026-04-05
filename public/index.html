@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.socket.io/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' http://localhost:3000 ws://localhost:3000 https://fonts.googleapis.com https://fonts.gstatic.com">
   <title>Regalem — Card Game</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -192,7 +191,7 @@
               </span>
             </div>
           </div>
-          <button class="btn-play ranked-btn" id="rankedPlayBtn" data-mode="ranked">
+          <button class="btn-play ranked-btn" onclick="window.openMatchmaking('ranked')">
             Find Match
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
@@ -217,7 +216,7 @@
               </span>
             </div>
           </div>
-          <button class="btn-play casual-btn" id="casualPlayBtn" data-mode="casual">
+          <button class="btn-play casual-btn" onclick="window.openMatchmaking('casual')">
             Quick Play
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
@@ -239,7 +238,7 @@
               <h3 class="room-title">Create Room</h3>
               <p class="room-desc">Set your rules, invite friends, host your own table.</p>
             </div>
-            <button class="btn-room" id="createRoomBtn">Create</button>
+            <button class="btn-room" onclick="window.openCreateModal()">Create</button>
           </div>
 
           <div class="room-card" id="joinRoomCard">
@@ -254,7 +253,7 @@
               <h3 class="room-title">Join Room</h3>
               <p class="room-desc">Enter a code to jump into a friend's private game.</p>
             </div>
-            <button class="btn-room secondary" id="joinRoomBtn">Join</button>
+            <button class="btn-room secondary" onclick="window.openJoinModal()">Join</button>
           </div>
 
         </div>
@@ -372,7 +371,7 @@
     <div class="modal">
       <div class="modal-header">
         <h2 class="modal-title">Create a Room</h2>
-        <button class="modal-close" data-close="createRoomModal">
+        <button class="modal-close" type="button" onclick="window.closeModal('createRoomModal')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -400,8 +399,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-modal-cancel" onclick="document.getElementById('createRoomModal').classList.remove('open')">Cancel</button>
-        <button class="btn-modal-confirm" id="confirmCreateBtn">Create Room</button>
+        <button class="btn-modal-cancel" type="button" onclick="window.closeModal('createRoomModal')">Cancel</button>
+        <button class="btn-modal-confirm" type="button" onclick="window.confirmCreateRoom()">Create Room</button>
       </div>
     </div>
   </div>
@@ -411,14 +410,14 @@
     <div class="modal">
       <div class="modal-header">
         <h2 class="modal-title">Join a Room</h2>
-        <button class="modal-close" data-close="joinRoomModal">
+        <button class="modal-close" type="button" onclick="window.closeModal('joinRoomModal')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="modal-body">
         <div class="form-group">
           <label class="form-label">Room Code</label>
-          <input type="text" id="roomCodeInput" class="form-input" placeholder="XXXX-XXXX" maxlength="50" />
+          <input type="text" id="roomCodeInput" class="form-input" placeholder="Enter room code" maxlength="50" />
           <p class="form-hint">Ask the room host for their room ID.</p>
         </div>
         <div class="join-rooms-found">
@@ -429,8 +428,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-modal-cancel" onclick="document.getElementById('joinRoomModal').classList.remove('open')">Cancel</button>
-        <button class="btn-modal-confirm" id="confirmJoinBtn">Join Room</button>
+        <button class="btn-modal-cancel" type="button" onclick="window.closeModal('joinRoomModal')">Cancel</button>
+        <button class="btn-modal-confirm" type="button" onclick="window.confirmJoinRoom()">Join Room</button>
       </div>
     </div>
   </div>
@@ -447,7 +446,7 @@
         <p id="mmMode" style="color: #b8a888; margin-bottom: 12px;">Casual Play</p>
         <p id="mmTimer" style="font-size: 24px; font-weight: 600; color: #c9993a; margin-bottom: 12px;">0:00</p>
         <div style="font-size: 12px; color: #999; margin-bottom: 20px;">Searching for players...</div>
-        <button class="btn-modal-cancel" id="cancelMatchBtn">Cancel Search</button>
+        <button class="btn-modal-cancel" type="button" onclick="window.cancelMatchmaking()">Cancel Search</button>
       </div>
     </div>
   </div>
@@ -461,6 +460,105 @@
   <!-- Socket.io library -->
   <script src="https://cdn.socket.io/4.7.0/socket.io.min.js"></script>
 
+  <!-- Global modal functions - MUST be before module scripts -->
+  <script>
+    let matchmakingInterval = null;
+
+    // Modal functions
+    window.openModal = function(id) {
+      const modal = document.getElementById(id);
+      if (modal) modal.classList.add('open');
+    };
+
+    window.closeModal = function(id) {
+      const modal = document.getElementById(id);
+      if (modal) modal.classList.remove('open');
+    };
+
+    window.openCreateModal = function() {
+      window.openModal('createRoomModal');
+    };
+
+    window.openJoinModal = function() {
+      window.openModal('joinRoomModal');
+    };
+
+    // Matchmaking functions
+    window.openMatchmaking = function(mode) {
+      window.openModal('matchmakingModal');
+      document.getElementById('mmMode').textContent = mode.charAt(0).toUpperCase() + mode.slice(1) + ' Play';
+      window.startMatchmakingTimer();
+    };
+
+    window.cancelMatchmaking = function() {
+      if (matchmakingInterval) clearInterval(matchmakingInterval);
+      window.closeModal('matchmakingModal');
+      document.getElementById('mmTimer').textContent = '0:00';
+    };
+
+    window.startMatchmakingTimer = function() {
+      let seconds = 0;
+      if (matchmakingInterval) clearInterval(matchmakingInterval);
+      
+      matchmakingInterval = setInterval(() => {
+        seconds++;
+        const minutes = Math.floor(seconds / 60);
+        const secs = String(seconds % 60).padStart(2, '0');
+        document.getElementById('mmTimer').textContent = `${minutes}:${secs}`;
+      }, 1000);
+    };
+
+    // Room creation functions
+    window.confirmCreateRoom = function() {
+      const name = document.getElementById('roomNameInput').value.trim();
+      const maxPlayers = document.getElementById('maxPlayersInput').value;
+      const gameMode = document.getElementById('gameModeInput').value;
+
+      if (!name) {
+        alert('Please enter a room name');
+        return;
+      }
+
+      console.log('Creating room:', { name, maxPlayers, gameMode });
+      alert('✓ Room created! (API integration needed)');
+      window.closeModal('createRoomModal');
+      document.getElementById('roomNameInput').value = '';
+    };
+
+    // Room join functions
+    window.confirmJoinRoom = function() {
+      const roomCode = document.getElementById('roomCodeInput').value.trim();
+
+      if (!roomCode) {
+        alert('Please enter a room code');
+        return;
+      }
+
+      console.log('Joining room:', roomCode);
+      alert('✓ Joining room! (API integration needed)');
+      window.closeModal('joinRoomModal');
+      document.getElementById('roomCodeInput').value = '';
+    };
+
+    // Close on backdrop click
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+        backdrop.addEventListener('click', function(e) {
+          if (e.target === this) {
+            this.classList.remove('open');
+          }
+        });
+      });
+
+      // Close on Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+        }
+      });
+    });
+  </script>
+
   <!-- Home page initialization -->
   <script type="module">
     import { StorageService } from '/src/frontend/services/StorageService.js';
@@ -473,16 +571,12 @@
     const user = StorageService.load('user');
 
     if (!token || !user) {
-      // Redirect to login if not authenticated
       window.location.href = '/login';
     } else {
-      // User is authenticated, load the home page
       initializeHome();
     }
 
-    // Initialize home page
     function initializeHome() {
-      // Get user data
       const user = StorageService.load('user');
 
       if (!user) {
@@ -490,7 +584,6 @@
         return;
       }
 
-      // Update UI with user data
       function updateUI() {
         const initials = (user.username || 'U').substring(0, 2).toUpperCase();
         
@@ -521,7 +614,6 @@
         document.getElementById('chipRank').textContent = rank;
         document.getElementById('userRankLabel').textContent = rank;
 
-        // XP bar
         const nextRankThreshold = 10000;
         const xpPercent = Math.min((rating / nextRankThreshold) * 100, 100);
         document.getElementById('xpBar').style.width = `${xpPercent}%`;
@@ -537,95 +629,17 @@
         return 'Unranked';
       }
 
-      // Modal handlers
-      document.getElementById('createRoomBtn').addEventListener('click', () => {
-        document.getElementById('createRoomModal').classList.add('open');
-      });
-
-      document.getElementById('joinRoomBtn').addEventListener('click', () => {
-        document.getElementById('joinRoomModal').classList.add('open');
-      });
-
-      document.querySelectorAll('[data-close]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const modalId = btn.getAttribute('data-close');
-          document.getElementById(modalId).classList.remove('open');
+      // Profile dropdown
+      const profileChip = document.getElementById('profileChip');
+      if (profileChip) {
+        profileChip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          profileChip.classList.toggle('open');
         });
-      });
 
-      // Create room
-      document.getElementById('confirmCreateBtn').addEventListener('click', async () => {
-        const name = document.getElementById('roomNameInput').value.trim();
-        const maxPlayers = document.getElementById('maxPlayersInput').value;
-        const gameMode = document.getElementById('gameModeInput').value;
-
-        if (!name) {
-          alert('Please enter a room name');
-          return;
-        }
-
-        try {
-          // Placeholder for API call
-          console.log('Creating room:', { name, maxPlayers, gameMode });
-          alert('Room created! (API integration needed)');
-          document.getElementById('createRoomModal').classList.remove('open');
-        } catch (error) {
-          alert('Error creating room: ' + error.message);
-        }
-      });
-
-      // Join room
-      document.getElementById('confirmJoinBtn').addEventListener('click', async () => {
-        const roomCode = document.getElementById('roomCodeInput').value.trim();
-
-        if (!roomCode) {
-          alert('Please enter a room code');
-          return;
-        }
-
-        try {
-          // Placeholder for API call
-          console.log('Joining room:', roomCode);
-          alert('Joining room! (API integration needed)');
-          document.getElementById('joinRoomModal').classList.remove('open');
-        } catch (error) {
-          alert('Error joining room: ' + error.message);
-        }
-      });
-
-      // Play buttons
-      document.getElementById('rankedPlayBtn').addEventListener('click', () => {
-        console.log('Ranked play clicked');
-        document.getElementById('matchmakingModal').classList.add('open');
-        startMatchmakingTimer('ranked');
-      });
-
-      document.getElementById('casualPlayBtn').addEventListener('click', () => {
-        console.log('Casual play clicked');
-        document.getElementById('matchmakingModal').classList.add('open');
-        startMatchmakingTimer('casual');
-      });
-
-      // Cancel matchmaking
-      document.getElementById('cancelMatchBtn').addEventListener('click', () => {
-        document.getElementById('matchmakingModal').classList.remove('open');
-      });
-
-      function startMatchmakingTimer(mode) {
-        document.getElementById('mmMode').textContent = mode.charAt(0).toUpperCase() + mode.slice(1) + ' Play';
-        let seconds = 0;
-        const interval = setInterval(() => {
-          seconds++;
-          const minutes = Math.floor(seconds / 60);
-          const secs = String(seconds % 60).padStart(2, '0');
-          document.getElementById('mmTimer').textContent = `${minutes}:${secs}`;
-        }, 1000);
-
-        // Stop after 60 seconds (placeholder)
-        setTimeout(() => {
-          clearInterval(interval);
-          console.log('Match found!');
-        }, 60000);
+        document.addEventListener('click', () => {
+          profileChip.classList.remove('open');
+        });
       }
 
       // Logout
@@ -638,7 +652,6 @@
         }
       });
 
-      // Initialize
       updateUI();
     }
   </script>

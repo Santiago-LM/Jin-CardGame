@@ -51,7 +51,9 @@ app.use(
         connectSrc: [
           "'self'",
           'http://localhost:3000',
+          'http://localhost:5173',
           'ws://localhost:3000',
+          'https://cdn.socket.io',
           'https://fonts.googleapis.com',
           'https://fonts.gstatic.com',
         ],
@@ -78,28 +80,45 @@ app.use('/src/shared', express.static(path.join(__dirname, 'src/shared')));
 // Database connection
 connectDatabase();
 
-// Fix database indexes on startup
-async function fixIndexes() {
+// Clean up database and sync indexes on startup
+async function cleanupAndSyncDatabase() {
   try {
-    console.log('🔧 Fixing database indexes...');
-
-    // Drop old indexes
-    await User.collection.dropIndexes();
-    console.log('✓ Old indexes dropped');
-
-    // Create new indexes
-    await User.collection.createIndexes();
-    console.log('✓ New indexes created');
-  } catch (error) {
-    if (error.message.includes('no indexes to drop')) {
-      console.log('✓ No old indexes to drop');
-    } else {
-      console.error('Index error:', error.message);
+    console.log('🔧 Cleaning up database...');
+    
+    // Drop all indexes first (completely clean slate)
+    try {
+      await User.collection.dropIndexes();
+      console.log('✓ All indexes dropped');
+    } catch (err) {
+      if (err.message.includes('index not found')) {
+        console.log('✓ No indexes to drop');
+      } else if (!err.message.includes('cannot drop _id index')) {
+        throw err;
+      }
     }
+
+    // Remove documents with null usernames that cause duplicate key errors
+    const result = await User.deleteMany({ username: { $in: [null, ''] } });
+    if (result.deletedCount > 0) {
+      console.log(`✓ Removed ${result.deletedCount} invalid documents (null/empty usernames)`);
+    }
+
+    // Now rebuild indexes
+    console.log('🔧 Rebuilding indexes...');
+    await User.syncIndexes();
+    console.log('✓ Database indexes synced successfully');
+
+  } catch (error) {
+    console.error('⚠️  Database cleanup error:', error.message);
+    console.error('Please manually clean the database or drop the collection');
+    // Don't crash - let the app continue
   }
 }
 
-fixIndexes();
+// Wait a bit for DB connection to stabilize, then cleanup
+setTimeout(() => {
+  cleanupAndSyncDatabase();
+}, 1000);
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -121,13 +140,17 @@ app.get('/game.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'game.html'));
 });
 
+app.get('/game', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'game.html'));
+});
+
 // WebSocket
 socketManager(io);
 
-// Error handling
+// Error handling middleware (must be last)
 app.use(errorHandler);
 
-// 404 handler
+// 404 handler (must be after all other routes)
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
