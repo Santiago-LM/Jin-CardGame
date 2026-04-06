@@ -477,34 +477,34 @@
 
     Logger.setLevel('INFO');
 
-    const api = new APIService();
+    // Redirect early if already logged in; all setup code runs in this IIFE
+    (async () => {
+      const token = StorageService.getToken();
+      if (token) {
+        window.location.href = '/';
+        return;
+      }
 
-    // DOM Elements
-    const loginSection = document.getElementById('loginSection');
-    const registerSection = document.getElementById('registerSection');
-    const formMessage = document.getElementById('formMessage');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const switchRegisterBtn = document.getElementById('switchRegisterBtn');
-    const switchLoginBtn = document.getElementById('switchLoginBtn');
-    const toggleLink = document.getElementById('toggleLink');
+      const api = new APIService();
 
-    const loginEmail = document.getElementById('loginEmail');
-    const loginPassword = document.getElementById('loginPassword');
-    const rememberMe = document.getElementById('rememberMe');
+      // DOM Elements
+      const loginSection = document.getElementById('loginSection');
+      const registerSection = document.getElementById('registerSection');
+      const formMessage = document.getElementById('formMessage');
+      const loginBtn = document.getElementById('loginBtn');
+      const registerBtn = document.getElementById('registerBtn');
+      const switchRegisterBtn = document.getElementById('switchRegisterBtn');
+      const switchLoginBtn = document.getElementById('switchLoginBtn');
+      const toggleLink = document.getElementById('toggleLink');
 
-    const registerUsername = document.getElementById('registerUsername');
-    const registerEmail = document.getElementById('registerEmail');
-    const registerPassword = document.getElementById('registerPassword');
-    const registerConfirm = document.getElementById('registerConfirm');
-    const agreeTerms = document.getElementById('agreeTerms');
+      const loginEmail = document.getElementById('loginEmail');
+      const loginPassword = document.getElementById('loginPassword');
 
-    // Check if already logged in
-    const token = StorageService.load('token');
-    if (token) {
-      window.location.href = '/';
-      exit;
-    }
+      const registerUsername = document.getElementById('registerUsername');
+      const registerEmail = document.getElementById('registerEmail');
+      const registerPassword = document.getElementById('registerPassword');
+      const registerConfirm = document.getElementById('registerConfirm');
+      const agreeTerms = document.getElementById('agreeTerms');
 
     // Show message
     function showMessage(message, type = 'error') {
@@ -642,6 +642,7 @@
     registerConfirm.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') registerBtn.click();
     });
+    })(); // end IIFE
   </script>
 
 </body>

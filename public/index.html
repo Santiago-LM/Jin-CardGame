@@ -562,97 +562,53 @@
   <!-- Home page initialization -->
   <script type="module">
     import { StorageService } from '/src/frontend/services/StorageService.js';
+    import { UIManager } from '/src/frontend/utils/UIManager.js';
+    import { triggerEntranceAnimations } from '/src/frontend/utils/animationUtils.js';
     import { Logger } from '/src/frontend/utils/logger.js';
 
     Logger.setLevel('INFO');
 
-    // Check if user is logged in
-    const token = StorageService.load('token');
-    const user = StorageService.load('user');
+    // Check if user is logged in (StorageService uses regalem_ prefix)
+    const token = StorageService.getToken();
+    const user = StorageService.getUser();
 
     if (!token || !user) {
       window.location.href = '/login';
     } else {
-      initializeHome();
+      initializeHome(user);
     }
 
-    function initializeHome() {
-      const user = StorageService.load('user');
+    function initializeHome(user) {
+      // Populate all profile UI elements via UIManager
+      UIManager.updateUserProfile(user);
 
-      if (!user) {
-        window.location.href = '/login';
-        return;
-      }
-
-      function updateUI() {
-        const initials = (user.username || 'U').substring(0, 2).toUpperCase();
-        
-        document.getElementById('userAvatar').textContent = initials;
-        document.getElementById('chipAvatar').textContent = initials;
-        document.getElementById('dropdownAvatar').textContent = initials;
-        document.getElementById('lbUserAvatar').textContent = initials;
-        
-        document.getElementById('userName').textContent = user.username;
-        document.getElementById('chipName').textContent = user.username;
-        document.getElementById('dropdownName').textContent = user.username;
-        document.getElementById('lbUserName').textContent = `${user.username} (you)`;
-        document.getElementById('dropdownEmail').textContent = user.email;
-        
-        document.getElementById('heroGreeting').textContent = `Welcome back, ${user.username}`;
-        
-        const rating = user.totalScore || 0;
-        document.getElementById('userRatingVal').textContent = rating.toLocaleString();
-        document.getElementById('lbUserRating').textContent = rating.toLocaleString();
-        
-        document.getElementById('userWinsVal').textContent = user.wins || 0;
-        
-        const total = (user.wins || 0) + (user.losses || 0);
-        const winRate = total > 0 ? Math.round((user.wins / total) * 100) : 0;
-        document.getElementById('userWinRateVal').textContent = `${winRate}%`;
-        
-        const rank = getRank(rating);
-        document.getElementById('chipRank').textContent = rank;
-        document.getElementById('userRankLabel').textContent = rank;
-
-        const nextRankThreshold = 10000;
-        const xpPercent = Math.min((rating / nextRankThreshold) * 100, 100);
-        document.getElementById('xpBar').style.width = `${xpPercent}%`;
-        document.getElementById('xpProgress').textContent = `${rating} / ${nextRankThreshold}`;
-      }
-
-      function getRank(score) {
-        if (score >= 3000) return 'Diamond';
-        if (score >= 2500) return 'Platinum';
-        if (score >= 2000) return 'Gold';
-        if (score >= 1500) return 'Silver';
-        if (score >= 1000) return 'Bronze';
-        return 'Unranked';
-      }
-
-      // Profile dropdown
+      // Profile dropdown toggle
       const profileChip = document.getElementById('profileChip');
       if (profileChip) {
         profileChip.addEventListener('click', (e) => {
           e.stopPropagation();
           profileChip.classList.toggle('open');
         });
-
-        document.addEventListener('click', () => {
-          profileChip.classList.remove('open');
-        });
+        document.addEventListener('click', () => profileChip.classList.remove('open'));
       }
 
       // Logout
-      document.getElementById('logoutBtn').addEventListener('click', (e) => {
-        e.preventDefault();
-        if (confirm('Are you sure you want to logout?')) {
-          StorageService.clear();
-          Logger.info('✓ Logged out');
-          window.location.href = '/login';
-        }
-      });
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (confirm('Are you sure you want to logout?')) {
+            StorageService.clearAuth();
+            Logger.info('✓ Logged out');
+            window.location.href = '/login';
+          }
+        });
+      }
 
-      updateUI();
+      // Trigger CSS entrance animations (fixes opacity-0 blocking content display)
+      triggerEntranceAnimations();
+
+      Logger.info(`✓ Home page ready for ${user.username}`);
     }
   </script>
 

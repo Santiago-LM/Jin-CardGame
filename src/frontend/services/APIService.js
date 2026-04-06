@@ -2,6 +2,8 @@
  * REST API service
  */
 
+import { StorageService } from './StorageService.js';
+
 export class APIService {
   constructor(baseURL = 'http://localhost:3000/api') {
     this.baseURL = baseURL;
@@ -9,21 +11,21 @@ export class APIService {
   }
 
   /**
-   * Get stored token
+   * Get stored token via StorageService (consistent regalem_ prefix)
    */
   getStoredToken() {
-    return localStorage.getItem('token') || null;
+    return StorageService.getToken();
   }
 
   /**
-   * Set token
+   * Set token via StorageService (consistent regalem_ prefix)
    */
   setToken(token) {
     this.token = token;
     if (token) {
-      localStorage.setItem('token', token);
+      StorageService.setToken(token);
     } else {
-      localStorage.removeItem('token');
+      StorageService.clearAuth();
     }
   }
 
