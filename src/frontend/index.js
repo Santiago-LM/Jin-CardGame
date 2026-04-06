@@ -1,49 +1,69 @@
 /**
- * Regalem - Home Page Entry Point
+ * Regalem — Home Page Entry Point
+ * Initializes the RegalemClient and wires up event-driven UI updates.
  */
 
-import { APIService } from './services/APIService.js';
-import { WebSocketClient } from './services/WebSocketClient.js';
-import { GameStateManager } from './state/GameStateManager.js';
+import { RegalemClient } from './services/RegalemClient.js';
 import { StorageService } from './services/StorageService.js';
-import { HomePage } from './pages/HomePage.js';
+import { UIManager } from './utils/UIManager.js';
+import { triggerEntranceAnimations } from './utils/animationUtils.js';
 import { Logger } from './utils/logger.js';
 
-// Set logging level
 Logger.setLevel('INFO');
 
-// Initialize services
-const apiService = new APIService();
-const socketClient = new WebSocketClient();
-const gameStateManager = new GameStateManager();
+// Expose a single global app instance for cross-component communication
+const client = new RegalemClient();
 
-// Create global app object
 window.regalem = {
-  api: apiService,
-  socket: socketClient,
-  state: gameStateManager,
+  client,
+  api: client.api,
+  socket: client.socket,
+  state: client,
   storage: StorageService,
   logger: Logger,
 };
 
-// Initialize page
 document.addEventListener('DOMContentLoaded', async () => {
   Logger.info('🎴 Regalem Home Page Loading...');
-  
+
   try {
-    // Check authentication
-    const token = StorageService.load('token');
-    const user = StorageService.load('user');
-    
-    if (token && user) {
-      Logger.info(`✓ User authenticated: ${user.username}`);
-      apiService.setToken(token);
-      socketClient.connect(token);
+    if (!client.isAuthenticated()) {
+      Logger.info('User not authenticated, redirecting to login');
+      window.location.href = '/login';
+      return;
     }
-    
-    // Initialize home page
-    const homePage = new HomePage(apiService, socketClient, gameStateManager);
-    homePage.init();
+
+    Logger.info(`✓ User authenticated: ${client.user.username}`);
+    client.connectSocket();
+    UIManager.updateUserProfile(client.user);
+
+    // Wire up logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (confirm('Are you sure you want to logout?')) {
+          client.logout();
+          Logger.info('✓ Logged out');
+          window.location.href = '/login';
+        }
+      });
+    }
+
+    // Profile dropdown toggle
+    const profileChip = document.getElementById('profileChip');
+    if (profileChip) {
+      profileChip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileChip.classList.toggle('open');
+      });
+      document.addEventListener('click', () => profileChip.classList.remove('open'));
+    }
+
+    // Trigger entrance animations after UI is ready
+    triggerEntranceAnimations();
+
+    Logger.info('✓ Home page initialized');
   } catch (error) {
     Logger.error('Page initialization failed', error);
   }

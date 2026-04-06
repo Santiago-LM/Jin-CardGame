@@ -744,40 +744,7 @@
 
   <!-- Game initialization -->
   <script type="module">
-    import { StorageService } from '/src/frontend/services/StorageService.js';
-    import { Logger } from '/src/frontend/utils/logger.js';
-
-    Logger.setLevel('INFO');
-
-    // Check if user is logged in
-    const token = StorageService.load('token');
-    const user = StorageService.load('user');
-
-    if (!token || !user) {
-      // Redirect to login if not authenticated
-      Logger.warn('User not authenticated, redirecting to login');
-      window.location.href = '/login';
-    } else {
-      // User is authenticated, load the game
-      Logger.info(`✓ User authenticated: ${user.username}`);
-      
-      // Get game ID from URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const gameId = urlParams.get('gameId') || urlParams.get('roomId');
-
-      if (!gameId) {
-        Logger.error('No game ID provided');
-        alert('No game specified. Redirecting...');
-        window.location.href = '/';
-      } else {
-        // Initialize game (placeholder)
-        console.log('Initializing game:', gameId);
-        console.log('Player:', user.username);
-        
-        // TODO: Load the actual game module
-        // import('/src/frontend/game.js');
-      }
-    }
+    import '/src/frontend/game.js';
   </script>
 
 </body>
